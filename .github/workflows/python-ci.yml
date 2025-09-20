@@ -17,7 +17,7 @@ permissions:
 
 defaults:
   run:
-    working-directory: "face-recognitionpython"
+    working-directory: face-recognitionpython
 
 jobs:
   python_ci:
@@ -25,7 +25,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Show repo files
+      - name: Show repo files (debug)
         run: |
           pwd
           ls -R
@@ -35,7 +35,7 @@ jobs:
         with:
           python-version: '3.11'
           cache: 'pip'
-          cache-dependency-path: '**/requirements.txt'   # <— changed
+          cache-dependency-path: '**/requirements.txt'
 
       - name: Install dependencies
         run: |
