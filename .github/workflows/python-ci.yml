@@ -4,11 +4,11 @@ on:
   push:
     branches: [ main ]
     paths:
-      - 'face-recognition python/**'
+      - 'face-recognitionpython/**'
       - '.github/workflows/python-ci.yml'
   pull_request:
     paths:
-      - 'face-recognition python/**'
+      - 'face-recognitionpython/**'
       - '.github/workflows/python-ci.yml'
   workflow_dispatch: {}
 
@@ -17,7 +17,7 @@ permissions:
 
 defaults:
   run:
-    working-directory: "face-recognition python"
+    working-directory: "face-recognitionpython"
 
 jobs:
   python_ci:
