@@ -1,0 +1,68 @@
+name: CI - Java (Spring Boot)
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build_test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Show repo files (debug)
+        run: |
+          pwd
+          ls -la
+          echo "--- find pom.xml / wrapper ---"
+          find . -maxdepth 3 \( -name "pom.xml" -o -name "mvnw" -o -name "mvnw.cmd" \) -print || true
+          echo "--- find application-ci.yml ---"
+          find src -maxdepth 4 -name "application-ci.yml" -print || true
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+
+      # Run Maven with the CI profile so it uses H2 (no MySQL needed)
+      - name: Build & test (ci profile)
+        env:
+          SPRING_PROFILES_ACTIVE: ci
+          MAVEN_OPTS: -Xmx1g
+        run: |
+          chmod +x ./mvnw || true
+          ./mvnw -B -ntp clean verify
+
+      # Upload JUnit/Surefire reports to help debug failures
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-reports
+          path: |
+            **/target/surefire-reports/**
+            **/target/failsafe-reports/**
+          if-no-files-found: ignore
+
+      # Optional: keep the built JAR as an artifact
+      - name: Upload app artifact (jar)
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-jar
+          path: |
+            **/target/*.jar
+          if-no-files-found: ignore
